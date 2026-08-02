@@ -1,9 +1,8 @@
-
-
-
 from fastapi import FastAPI
 from pydantic import BaseModel
 import uvicorn
+import socket
+
 
 app = FastAPI(
     title="Attendance API",
@@ -129,13 +128,14 @@ async def home():
 # ==========================================================
 
 if __name__ == "__main__":
-    # Development mode (single worker)
+    hostname = socket.gethostname()
+    ip = socket.gethostbyname(hostname)
+
+    print(f"Server running at: http://{ip}:8000")
+
     uvicorn.run(
         "server:app",
         host="0.0.0.0",
         port=8000,
         reload=True
-    ) 
-
-
-
+    )
