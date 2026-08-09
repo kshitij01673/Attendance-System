@@ -2,7 +2,9 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import uvicorn
 import socket
-
+import sqlite3
+import import_ipynb
+from utils import dbms_controller as db
 
 app = FastAPI(
     title="Attendance API",
@@ -27,6 +29,9 @@ class AttendanceRequest(BaseModel):
 class AttendanceResponse(BaseModel):
     success: bool
     message: str
+
+# Database Object
+conn = sqlite3.connect("utils/attendance.db")
 
 
 # ==========================================================
@@ -53,19 +58,19 @@ def verify_user_exists(user_id: int, name: str) -> bool:
 
 
 def verify_secret_code(user_id: int, secret_code: str) -> bool:
-    """
-    Verify the user's secret/security code.
-    """
-    return True
+    if db.verify_user_hash(conn, secret_code):
+        return True
+    else:
+        return False
     # return your_verify_secret_function(user_id, secret_code)
     # pass
 
 
-def mark_attendance(user_id: int) -> bool:
-    """
-    Mark attendance in your database.
-    """
-    return True
+def mark_attendance(user_id: int, device_id: str) -> bool:
+    if db.mark_presence(conn,user_id,device_id):
+        return True
+    else:
+        return False
     # return your_mark_attendance_function(user_id)
     # pass
 
@@ -99,7 +104,7 @@ async def attendance(data: AttendanceRequest):
         )
 
     # Mark Attendance
-    if not mark_attendance(data.user_id):
+    if not mark_attendance(data.user_id, data.device_id):
         return AttendanceResponse(
             success=False,
             message="Attendance Failed"
@@ -107,7 +112,7 @@ async def attendance(data: AttendanceRequest):
 
     return AttendanceResponse(
         success=True,
-        message="Attendance Marked Successfully"
+        message=f"Attendance Marked Successfully for {data.user_id}"
     )
 
 
