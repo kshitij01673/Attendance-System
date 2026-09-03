@@ -1,10 +1,19 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[ ]:
+
+
 import sqlite3
 from datetime import datetime
 
 
 
+# In[ ]:
+
+
 # Database file name
-DB_NAME = "attendance.db"
+DB_NAME = "utils//attendance.db"
 
 # Connect to the database (creates it if it doesn't exist)
 conn = sqlite3.connect(DB_NAME)
@@ -35,6 +44,15 @@ CREATE TABLE IF NOT EXISTS attendance (
 )
 ''')
 
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS device (
+    S_no INTEGER PRIMARY KEY AUTOINCREMENT,
+    id TEXT UNIQUE NOT NULL,
+    location TEXT
+)
+''')
+
 # Save changes
 conn.commit()
 
@@ -44,6 +62,8 @@ print("Tables created (if they didn't already exist).")
 # Close the connection
 conn.close()
 
+
+# In[ ]:
 
 
 #note: add a table for devices
@@ -59,12 +79,14 @@ Status = Absent
 Then when a student scans:
 
 Absent → Present
- 
+
 This is also a good approach because:
 
 You don't need an extra "mark absences" step.
 The IoT device only changes a student's status from Absent to Present.'''
 
+
+# In[ ]:
 
 
 def initialize_attendance(conn, device_id="SYSTEM"):
@@ -99,6 +121,8 @@ def initialize_attendance(conn, device_id="SYSTEM"):
     conn.commit()
 
 
+# In[ ]:
+
 
 def mark_presence(conn, id, device_id):
     """
@@ -128,6 +152,8 @@ def mark_presence(conn, id, device_id):
     return True
 
 
+# In[ ]:
+
 
 def verify_user_hash(conn, user_hash):
     """
@@ -143,5 +169,32 @@ def verify_user_hash(conn, user_hash):
     return cursor.fetchone() is not None
 
 
+# In[1]:
 
+
+# In[ ]:
+
+
+def device_exists(conn, device_id):
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT 1 FROM device WHERE id = ? LIMIT 1",
+        (device_id,)
+    )
+    return cursor.fetchone() is not None
+
+
+# In[ ]:
+
+
+def user_exists(conn, user_id, name, user_hash):
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT 1
+        FROM users
+        WHERE id = ? AND name = ? AND hash = ?
+        LIMIT 1
+    """, (user_id, name, user_hash))
+
+    return cursor.fetchone() is not None
 

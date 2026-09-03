@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[2]:
+
+
+import cv2
+import ast
+
+def scan_camera():
+    detector = cv2.QRCodeDetector()
+    cap = cv2.VideoCapture(0)
+
+    if not cap.isOpened():
+        raise RuntimeError("Could not access camera.")
+
+    try:
+        while True:
+            ret, frame = cap.read()
+
+            if not ret:
+                continue
+
+            data, _, _ = detector.detectAndDecode(frame)
+
+            if data:
+                return ast.literal_eval(data)
+
+    finally:
+        cap.release()
+
+if __name__ == '__main__' :
+    result = scan_camera()
+
+    print(result)
+    print(type(result))
+

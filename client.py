@@ -1,15 +1,20 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
 import requests
-import import_ipynb
 from utils import qrread as qr
 import msvcrt
 import cv2
 import os
 from datetime import datetime
+import time
 
 
-
-SERVER_URL = "http://192.168.1.10:8000/attendance"
-DEVICE_ID = "Devf01673"
+SERVER_URL = "http://192.168.1.5:8000/attendance"
+DEVICE_ID = "devf04UAH"
 
 
 def scan_user():
@@ -119,6 +124,8 @@ def capture_face(
 
 def send_attendance():
     data = scan_user()
+    print("Will takephoto in 5s")
+    time.sleep(5)
     capture_face()
     try:
         response = requests.post(
@@ -145,6 +152,16 @@ def send_attendance():
 
 
 if __name__ == "__main__":
-    while True:
-        input("Press Enter key to start.")
-        send_attendance()
+    send_attendance()
+
+
+
+
+
+
+
+# In[ ]:
+
+
+
+

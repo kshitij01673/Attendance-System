@@ -1,3 +1,23 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# ## Running the Server
+# 
+# During development
+# ```bash
+# python server.py
+# ```
+# This enables reload=True, so the server restarts automatically when you edit the code.
+# 
+# For production (recommended)
+# ```bash
+# uvicorn server:app --host 0.0.0.0 --port 8000 --workers 4
+# ```
+# Replace 4 with the number of CPU cores on your server if appropriate.
+
+# In[ ]:
+
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -7,7 +27,6 @@ from apscheduler.triggers.cron import CronTrigger
 import uvicorn
 import socket
 import sqlite3
-import import_ipynb
 
 from utils import dbms_controller as db
 
@@ -43,7 +62,7 @@ async def lifespan(app: FastAPI):
     # Run every day at 00:00
     scheduler.add_job(
         daily_task,
-        CronTrigger(hour=14, minute=39),
+        CronTrigger(hour=21, minute=12),
         id="daily_task",
         replace_existing=True
     )
@@ -95,11 +114,11 @@ class AttendanceResponse(BaseModel):
 # ==========================================================
 
 def verify_device(device_id: str) -> bool:
-    return True
+    return db.device_exists(conn, device_id)
 
 
-def verify_user_exists(user_id: int, name: str) -> bool:
-    return True
+def verify_user_exists(user_id: int, name: str, code: str) -> bool:
+    return db.user_exists(conn, user_id, name, code)
 
 
 def verify_secret_code(user_id: int, secret_code: str) -> bool:
@@ -123,7 +142,7 @@ async def attendance(data: AttendanceRequest):
             message="Invalid Device"
         )
 
-    if not verify_user_exists(data.user_id, data.name):
+    if not verify_user_exists(data.user_id, data.name, data.secret_code):
         return AttendanceResponse(
             success=False,
             message="User Not Found"
@@ -176,3 +195,4 @@ if __name__ == "__main__":
         port=8000,
         reload=True
     )
+
